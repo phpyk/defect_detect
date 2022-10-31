@@ -148,7 +148,7 @@ class Detection:
         if dets is not None:
             for *xyxy, conf, name_id in dets:
                 label = '%s %.2f' % (self.names[int(name_id)], conf)
-                plot_one_box(xyxy, draw, label=label, color=(0, 255, 0), line_thickness=3)
+                plot_one_box(xyxy, draw, label=label, color=(0, 255, 0), line_thickness=2)
 
         return draw
 
