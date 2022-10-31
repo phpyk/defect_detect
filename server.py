@@ -28,7 +28,6 @@ logger = EasyLog().logger
 
 #
 app = Flask(__name__)
-app.uploads_dir = 'static/img/'
 app.detector = None
 distutils.dir_util.mkpath(app.uploads_dir)
 
@@ -137,6 +136,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #
+    if not os.path.exists(args.model_path):
+        logging.log(logging.ERROR, 'model path not exist: {}'.format(args.model_path))
+        raise FileExistsError('model path not exist: {}'.format(args.model_path))
+        
     app.detector = Detection(args.model_path, ['defect'], args.score_thresh, args.iou_thresh)
     # app.run(host='0.0.0.0', port=args.port, debug=True)
     server = pywsgi.WSGIServer(('0.0.0.0', args.port), app)
