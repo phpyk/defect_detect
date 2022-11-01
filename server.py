@@ -29,7 +29,7 @@ logger = EasyLog().logger
 #
 app = Flask(__name__)
 app.detector = None
-distutils.dir_util.mkpath(app.uploads_dir)
+# distutils.dir_util.mkpath(app.uploads_dir)
 
 #
 def cv2_base64(image):
