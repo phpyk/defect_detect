@@ -85,6 +85,12 @@ def detect():
 
     if 'image_folder' in json_data:
         image_folder = json_data["image_folder"]
+        if not os.path.exists(image_folder):
+            logging.log(logging.ERROR, 'image folder not exist: {}'.format(image_folder))
+            result['message'] = 'image folder not exist: {}'.format(image_folder)
+            result['code'] = -1002
+            return jsonify(result)
+
         for name in os.listdir(image_folder):
             path = os.path.join(image_folder, name)
             image_pathes.append(path)
@@ -130,7 +136,7 @@ def detect():
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--port', type=int, default=5003, help='server port')
-    parser.add_argument('--model_path', type=str, default="models/u2netp.onnx", help='model path')
+    parser.add_argument('--model_path', type=str, default="model/best.onnx", help='model path')
     parser.add_argument('--score_thresh', type=float, default=0.4, help='score thersh')
     parser.add_argument('--iou_thresh', type=float, default=0.5, help='iou thersh')
     args = parser.parse_args()

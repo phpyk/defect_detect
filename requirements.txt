@@ -1,6 +1,7 @@
 numpy
 opencv-python>=4.5.1
-onnxruntime
+onnxruntime-gpu
 torch
 flask
 gevent
+pyinstaller
