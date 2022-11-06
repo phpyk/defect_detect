@@ -33,7 +33,7 @@ class Detection:
         so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL # ORT_ENABLE_EXTENDED ORT_ENABLE_ALL
         so.intra_op_num_threads = 4
         so.execution_mode = onnxruntime.ExecutionMode.ORT_SEQUENTIAL # ORT_PARALLEL ORT_SEQUENTIAL
-        self.ort_session = onnxruntime.InferenceSession(model_path, sess_options=so)              
+        self.ort_session = onnxruntime.InferenceSession(model_path, sess_options=so, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])              
         _, self.net_input_channels, self.net_input_height, self.net_input_width = self.ort_session.get_inputs()[0].shape
         # param
         self.prob_threshold = prob_threshold
