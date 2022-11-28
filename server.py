@@ -6,6 +6,7 @@ import time
 # Flask utils
 from flask import Flask, request, jsonify
 from gevent import pywsgi
+import json
 
 
 #
@@ -122,13 +123,17 @@ def detect():
             result['message'] = 'load image fail'
             result['code'] = -1003
             return jsonify(result)
+        short_name = name.split('.')[0]
 
         dets = app.detector.forward(image)
         if dets is not None:
             result['result'].extend(dets)
         if viz:
             drawed = app.detector.viz(image, dets)
-            viz_path = os.path.join(viz_folder, name)
+            if dets is not None:
+                viz_path = os.path.join(viz_folder, short_name + "_defect.jpg")
+            else:
+                viz_path = os.path.join(viz_folder, short_name + ".jpg")
             cv2.imwrite(viz_path, drawed)
 
     return jsonify(result)
@@ -139,14 +144,27 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, default="model/best.onnx", help='model path')
     parser.add_argument('--score_thresh', type=float, default=0.4, help='score thersh')
     parser.add_argument('--iou_thresh', type=float, default=0.5, help='iou thersh')
+    parser.add_argument('--config_file', type=str, default="model/config.json")
     args = parser.parse_args()
 
-    #
-    if not os.path.exists(args.model_path):
-        logging.log(logging.ERROR, 'model path not exist: {}'.format(args.model_path))
-        raise FileExistsError('model path not exist: {}'.format(args.model_path))
+    config = {
+        "model_path": "model/best.onnx",
+        "score_thresh": 0.4,
+        "iou_thresh": 0.5,
+        "port": 5003
+    }
+
+    if os.path.exists(args.config_file):
+        with open(args.config_file, 'r') as fr:
+            config = json.load(fr)
+
+    logging.log(logging.INFO, 'config: {}'.format(config))
+
+    if not os.path.exists(config["model_path"]):
+        logging.log(logging.ERROR, 'model path not exist: {}'.format(config["model_path"]))
+        raise FileExistsError('model path not exist: {}'.format(config["model_path"]))
         
-    app.detector = Detection(args.model_path, ['defect'], args.score_thresh, args.iou_thresh)
+    app.detector = Detection(config["model_path"], ['defect'], config["score_thresh"], config["iou_thresh"])
     # app.run(host='0.0.0.0', port=args.port, debug=True)
-    server = pywsgi.WSGIServer(('0.0.0.0', args.port), app)
+    server = pywsgi.WSGIServer(('0.0.0.0', config["port"]), app)
     server.serve_forever()

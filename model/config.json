@@ -1,0 +1,6 @@
+{
+    "model_path": "model/best.onnx",
+    "score_thresh": 0.4,
+    "iou_thresh": 0.5,
+    "port": 5004
+}
