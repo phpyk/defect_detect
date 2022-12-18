@@ -27,6 +27,9 @@ from log import EasyLog
 logging.basicConfig(level=logging.INFO)
 logger = EasyLog().logger
 
+global AREA_THREATH
+AREA_THREATH = 0
+
 #
 app = Flask(__name__)
 app.detector = None
@@ -62,6 +65,7 @@ def url_to_file(url_str, token_time, save_dir):
 #
 @app.route('/detect', methods=['POST'])
 def detect():
+    global AREA_THREATH
     # token
     token_time = time.time()
     logging.log(logging.INFO, "token start: {}".format(token_time))
@@ -116,6 +120,7 @@ def detect():
         os.makedirs(viz_folder)
 
     for path in image_pathes:
+        logging.log(logging.INFO, "image path: {}".format(path))
         image = cv2.imread(path)
         name = os.path.split(path)[-1]
         if image is None:
@@ -127,9 +132,15 @@ def detect():
 
         dets = app.detector.forward(image)
         if dets is not None:
-            result['result'].extend(dets)
+            for elem in dets:
+                *xyxy, conf, name_id = elem
+                area = (xyxy[2] - xyxy[0]) * (xyxy[3] - xyxy[1])
+                logging.log(logging.INFO, "area: {}".format(area))
+                if area > AREA_THREATH:
+                    result['result'].append(elem)
+
         if viz:
-            drawed = app.detector.viz(image, dets)
+            drawed = app.detector.viz(image, dets, AREA_THREATH)
             if dets is not None:
                 viz_path = os.path.join(viz_folder, short_name + "_defect.jpg")
             else:
@@ -145,19 +156,22 @@ if __name__ == '__main__':
     parser.add_argument('--score_thresh', type=float, default=0.4, help='score thersh')
     parser.add_argument('--iou_thresh', type=float, default=0.5, help='iou thersh')
     parser.add_argument('--config_file', type=str, default="model/config.json")
+    parser.add_argument('--area_thresh', type=float, default=0, help='area thersh')
     args = parser.parse_args()
 
     config = {
         "model_path": "model/best.onnx",
         "score_thresh": 0.4,
         "iou_thresh": 0.5,
-        "port": 5003
+        "port": 5003,
+        "area_thresh": 0
     }
 
     if os.path.exists(args.config_file):
         with open(args.config_file, 'r') as fr:
             config = json.load(fr)
 
+    AREA_THREATH = config["area_thresh"]
     logging.log(logging.INFO, 'config: {}'.format(config))
 
     if not os.path.exists(config["model_path"]):

@@ -129,7 +129,7 @@ class Detection:
 
         return res
 
-    def viz(self, image, dets):
+    def viz(self, image, dets, thresh=0):
         """可视化
 
         Parameters
@@ -148,7 +148,9 @@ class Detection:
         if dets is not None:
             for *xyxy, conf, name_id in dets:
                 label = '%s %.2f' % (self.names[int(name_id)], conf)
-                plot_one_box(xyxy, draw, label=label, color=(0, 255, 0), line_thickness=2)
+                x1, y1, x2, y2 = xyxy
+                if (x2 - x1) * (y2 - y1) > thresh:
+                    plot_one_box(xyxy, draw, label=label, color=(0, 255, 0), line_thickness=1)
 
         return draw
 

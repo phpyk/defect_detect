@@ -1,6 +1,7 @@
 {
-    "model_path": "model/best.onnx",
+    "model_path": "model/best_v20221218.onnx",
     "score_thresh": 0.4,
     "iou_thresh": 0.5,
-    "port": 5004
+    "port": 5003,
+    "area_thresh": 300
 }
